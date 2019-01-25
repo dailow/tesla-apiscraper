@@ -186,13 +186,14 @@ class StateMonitor(object):
                             any_change = True
                         if new_value != None:
                             if element not in a_ignore:
+                                if isinstance(new_value, int):
+                                    new_value = float(new_value)
                                 json_body = [
                                     {
                                         "measurement": request,
                                         "tags": {
                                             "vin": a_vin,
-                                            "display_name": a_displayname,
-                                            "metric": element
+                                            "display_name": a_displayname
                                         },
                                         "time": timestamp * 1000000000,
                                         "fields": {
@@ -266,7 +267,7 @@ class StateMonitor(object):
         return interval
 
 def lastStateReport(f_vin):
-    query="select time,state from vehicle_state where metric='state' and vin='"+ f_vin +"' order by time desc limit 1"
+    query="select time,state from vehicle_state where vin='"+ f_vin +"' order by time desc limit 1"
     influxresult = influxclient.query(query)
     point = list(influxresult.get_points(measurement='vehicle_state'))
     return(point[0])
@@ -411,8 +412,7 @@ while True:
                 "measurement": 'vehicle_state',
                 "tags": {
                     "vin": state_monitor.vehicle['vin'],
-                    "display_name": state_monitor.vehicle['display_name'],
-                    "metric": 'state'
+                    "display_name": state_monitor.vehicle['display_name']
                 },
                 "time": ts,
                 "fields": {
